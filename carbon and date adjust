@@ -1,0 +1,7 @@
+ $dateRange = $request->input('custom_date');
+        // Split the date range into start and end dates
+        
+        $dates = explode(' - ', $dateRange);
+        // Parse the start and end dates
+        $startDate = DateTime::createFromFormat('d/m/Y', trim($dates[0]))->format('Y-m-d'); // 2024-10-01
+        $endDate = DateTime::createFromFormat('d/m/Y', trim($dates[1]))->format('Y-m-d');   // 2024-10-31
