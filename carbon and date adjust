@@ -5,3 +5,112 @@
         // Parse the start and end dates
         $startDate = DateTime::createFromFormat('d/m/Y', trim($dates[0]))->format('Y-m-d'); // 2024-10-01
         $endDate = DateTime::createFromFormat('d/m/Y', trim($dates[1]))->format('Y-m-d');   // 2024-10-31
+
+
+
+
+date range picker css and js file and code
+                                **************************
+    <link rel="stylesheet" href="{{ asset('assets/plugins/daterangepicker/daterangepicker.css') }}" />
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Moment.js (required for Date Range Picker) -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+
+    <!-- Date Range Picker JS -->
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+                              ******************************
+
+  <input type="text" class="form-control float-right" id="custom_date_range_input"
+                        name="custom_date_range_input"
+                        value="{{ \Carbon\Carbon::now()->startOfMonth()->format('d-m-Y') }} - {{ \Carbon\Carbon::now()->endOfMonth()->format('d-m-Y') }}">
+                </div>
+                    **************************************
+ <script>
+        $(document).ready(function() {
+            // Wait for the page to fully load
+            setTimeout(function() {
+                var custom_date_range = $("#custom_date_range_input").val();
+                var Id = $("#userId").val();
+
+                // Ensure the custom date and ID exist before calling the function
+                if (custom_date_range && Id) {
+                    Attendance_Search(custom_date_range, Id);
+                } else {
+                    alert("custom_date_range or Id is not set!");
+                }
+            }, 100);
+        });
+
+        $(function() {
+            $('#custom_date_range_input').daterangepicker({
+                opens: 'left',
+                locale: {
+                    format: 'DD/MM/YYYY', // Ensure this matches the format used in the value
+                    separator: ' - ' // Separator between start and end dates
+                },
+                startDate: moment('{{ \Carbon\Carbon::now()->startOfMonth()->format('d-m-Y') }}',
+                    'DD-MM-YYYY'),
+                endDate: moment('{{ \Carbon\Carbon::now()->endOfMonth()->format('d-m-Y') }}',
+                    'DD-MM-YYYY'),
+            }, function(start, end, label) {
+                // console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+            });
+
+            $('#custom_date_range_input').on('apply.daterangepicker', function(ev, picker) {
+
+                var custom_date_range = $("#custom_date_range_input").val();
+                var Id = $("#userId").val();
+                Attendance_Search(custom_date_range, Id);
+            });
+
+            $('#custom_date_input').daterangepicker({
+                singleDatePicker: true,
+                opens: 'left',
+                locale: {
+                    format: 'DD/MM/YYYY', // Ensure this matches the format used in the value
+                    separator: ' - ' // Separator between start and end dates
+                },
+            }, function(start, end, label) {
+                //   console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+            });
+
+            $('#custom_date_input').on('apply.daterangepicker', function(ev, picker) {
+
+                var custom_date = $("#custom_date_input").val();
+
+                Attendance_Search(custom_date);
+            });
+        });
+
+
+        function Attendance_Search(custom_date_range, Id) {
+
+            $.ajax({
+                method: "post",
+                url: '{{ route('admin.attendance.search') }}',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    'custom_date': custom_date_range,
+                    'user_id': Id,
+
+                },
+                success: function(response) {
+                    // console.log(response.data);
+                    var tableData = '';
+                    if (response.data == '') {
+                        // alert(response.message);
+                        $('#message').html('No record found');
+                    } else {
+                        $('#messageRow').hide();
+                        // Append the data
+                        $('#bodyData').html(response.data);
+                    }
+                    // $('#bodyData').html(response.data);
+
+
+                }
+            });
+        }
+    </script>
